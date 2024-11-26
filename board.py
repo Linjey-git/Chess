@@ -1,6 +1,5 @@
 import chess
 
-
 class ChessBoard:
     def __init__(self):
         self.board = chess.Board()
@@ -41,11 +40,3 @@ class ChessBoard:
     def reset(self):
         """Скидає дошку до початкового стану."""
         self.board = chess.Board()
-
-    def promote_pawn(self, square_from, square_to, promotion_type):
-        """Перетворює пішака на іншу фігуру (якщо пішак досяг останнього ряду)."""
-        move = chess.Move(square_from, square_from, promotion_type)  # Вибір фігури для перетворення
-        print("From board.promote_pant")
-        print(move)
-        # self.board.push(move)
-        return move

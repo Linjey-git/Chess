@@ -1,0 +1,2 @@
+SQUARE_SIZE = 80
+BOARD_COLORS = ["#f0d9b5", "#b58863"]
