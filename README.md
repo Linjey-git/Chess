@@ -36,8 +36,8 @@ Follow these steps to set up and run the project:
 
 3. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/your-repository-name.git
-   cd your-repository-name
+   git clone https://github.com/Linjey-git/Chess.git
+   cd Chess
    ```
 ## Usage
 
