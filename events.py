@@ -40,6 +40,7 @@ class ChessEvents:
                             print(move)
 
                 self.board.make_move(move)
+                # self.chess_app.draw_move_arrow(move)
                 self.chess_app.update_board()
 
                 if self.board.is_game_over():

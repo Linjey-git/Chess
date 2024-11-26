@@ -86,6 +86,7 @@ class ChessApp:
         """Оновлюємо шахівницю після кожного ходу."""
         self.canvas.delete("pieces")  # очищаємо попередні фігури
         self.canvas.delete("check")  # очищаємо попереднє виділення шаху
+        # self.canvas.delete("arrow")  # очищаємо попередню стрілку
         for i in range(8):
             for j in range(8):
                 square = 8 * i + j
@@ -104,3 +105,26 @@ class ChessApp:
 
         self.highlight_check()  # Виклик нової функції для перевірки шаху
         self.highlight_legal_moves()  # Підсвічуємо можливі ходи для вибраної фігури
+
+    def draw_move_arrow(self, move):
+        """Малює червону стрілку, що символізує хід."""
+        self.canvas.delete("arrow")  # очищаємо попередню стрілку
+        from_square = move.from_square
+        to_square = move.to_square
+
+        # Перетворення координат квадратів на координати канваса
+        from_col, from_row = from_square % 8, from_square // 8
+        to_col, to_row = to_square % 8, to_square // 8
+
+        # Перевернути рахування рядків, щоб нижній ряд був 0, а верхній 7
+        from_row = 7 - from_row
+        to_row = 7 - to_row
+
+        # Перетворюємо ці координати на координати пікселів на канвасі
+        from_x1, from_y1 = from_col * SQUARE_SIZE, from_row * SQUARE_SIZE
+        to_x1, to_y1 = to_col * SQUARE_SIZE, to_row * SQUARE_SIZE
+
+        # Малюємо стрілку між клітинками
+        self.canvas.create_line(from_x1 + SQUARE_SIZE // 2, from_y1 + SQUARE_SIZE // 2,
+                                to_x1 + SQUARE_SIZE // 2, to_y1 + SQUARE_SIZE // 2,
+                                arrow=tk.LAST, fill="red", width=3, tags="arrow")
