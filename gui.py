@@ -28,6 +28,7 @@ class ChessApp:
         self.draw_board()
         self.update_board()
         self.yellow_square_image = self.create_transparent_yellow_square()
+        self.red_square_image = self.create_transparent_red_square()
 
         self.canvas.bind("<Button-1>", self.on_square_click)
 
@@ -35,6 +36,13 @@ class ChessApp:
         square_size = self.sq_size
         alpha = 128
         img = Image.new("RGBA", (square_size, square_size), (255, 255, 0, alpha))
+        return ImageTk.PhotoImage(img)
+
+    def create_transparent_red_square(self):
+        """Створює зображення прозорого червоного квадрата."""
+        square_size = self.sq_size
+        alpha = 64  # Прозорість
+        img = Image.new("RGBA", (square_size, square_size), (255, 0, 0, alpha))
         return ImageTk.PhotoImage(img)
 
     def load_images(self):
@@ -91,9 +99,24 @@ class ChessApp:
                     # Викликаємо нову функцію для малювання жовтого квадрату
                     self.draw_highlight_square(dest_row, dest_col)
 
+    def highlight_check(self):
+        """Перевіряє, чи є шах, і підсвічує клітинку короля червоним."""
+        if self.board.get_board().is_check():
+            king_square = self.board.get_board().king(self.board.get_board().turn)
+            if king_square is not None:
+                row, col = divmod(king_square, 8)
+                row = 7 - row  # Інвертуємо рядок для перевернутої шахівниці
+                self.canvas.create_image(
+                    col * self.sq_size + self.sq_size / 2,
+                    row * self.sq_size + self.sq_size / 2,
+                    image=self.red_square_image,
+                    tags="check"  # Додаємо тег для видалення попереднього шаху
+                )
+
     def update_board(self):
         """Оновлюємо шахівницю після кожного ходу."""
         self.canvas.delete("pieces")  # очищаємо попередні фігури
+        self.canvas.delete("check")  # очищаємо попереднє виділення шаху
         for i in range(8):
             for j in range(8):
                 square = 8 * i + j
@@ -109,6 +132,7 @@ class ChessApp:
                                              row * self.sq_size + self.sq_size / 2,
                                              image=self.piece_images[piece_name], anchor="center", tags="pieces")
 
+        self.highlight_check()  # Виклик нової функції для перевірки шаху
         self.highlight_legal_moves()  # Підсвічуємо можливі ходи для вибраної фігури
 
     def on_square_click(self, event):
@@ -145,7 +169,6 @@ class ChessApp:
                     messagebox.showinfo("Гра завершена", "Гра завершена!")
                     self.board.reset()
                     self.update_board()
-
 
                 self.selected_square = None  # Скидаємо вибір фігури після ходу
             else:
