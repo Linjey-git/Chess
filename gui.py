@@ -17,8 +17,7 @@ class ChessApp:
 
         self.board = ChessBoard()
 
-        self.canvas = tk.Canvas(self.root, width=SQUARE_SIZE * 8,
-                                height=SQUARE_SIZE * 8)  # Канвас для шахівниці
+        self.canvas = tk.Canvas(self.root, width=SQUARE_SIZE * 8 + 100, height=SQUARE_SIZE * 8)  # Канвас для шахівниці
         self.canvas.pack()
 
         self.graphics = Graphics(SQUARE_SIZE)
@@ -29,6 +28,17 @@ class ChessApp:
         self.piece_images = self.resources.get_piece_images()  # зберігаємо зображення фігур
         self.draw_board()
         self.update_board()
+
+        # Додаємо кнопку Help
+        self.help_button_text = tk.StringVar(value="Help OFF")  # Початковий текст
+        self.help_button = tk.Button(
+            self.root,
+            textvariable=self.help_button_text,
+            command=self.events.toggle_help,  # Викликає функцію обробки
+            width=8,
+            bg="lightgray"
+        )
+        self.help_button.place(x=SQUARE_SIZE * 8, y=SQUARE_SIZE * 4)  # Розташування кнопки праворуч
 
         self.canvas.bind("<Button-1>", self.events.on_square_click)
 

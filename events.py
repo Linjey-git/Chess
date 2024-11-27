@@ -1,8 +1,10 @@
 import chess
 import promotion
+import queue
 
-from constants import SQUARE_SIZE, BOARD_COLORS
+from constants import SQUARE_SIZE
 from tkinter import messagebox
+from threading import Thread, Event
 
 
 class ChessEvents:
@@ -11,6 +13,55 @@ class ChessEvents:
         self.board = chess_board
         self.selected_square = None  # зберігаємо вибрану клітинку для ходу
         self.selected_piece = None  # зберігаємо вибрану фігуру для ходу
+
+        self.help_thread = None
+        self.help_active = False  # Індикатор стану кнопки Help
+        self.help_stop_event = Event()  # Подія для зупинки потоку Help
+        # self.bot_controller = ChessBotController(dfs_depth=4, bfs_depth=3, ucs_depth=3)
+        # Черга для передачі даних
+        self.data_queue = queue.Queue()
+
+    def toggle_help(self):
+        """Обробник натискання кнопки Help."""
+        if self.help_active:
+            self.help_active = False
+            print("Help зупинено")
+            self.chess_app.help_button_text.set("Help OFF")
+            self.stop_help()
+        else:
+            self.help_active = True
+            print("Help запущено")
+            self.chess_app.help_button_text.set("Help ON")
+            self.start_help()
+
+    def start_help(self):
+        """Запуск потоку Help."""
+        self.help_stop_event.clear()  # Скидаємо стан події
+        # self.help_thread = Thread(target=self.help_thread_function, args=(self.data_queue,self.chess_app, self.bot_controller,),daemon=True)
+        self.help_thread = Thread(target=self.help_thread_function, args=(self.data_queue,),daemon=True)
+        self.help_thread.start()
+
+    def stop_help(self):
+        """Зупинка потоку Help."""
+        self.chess_app.canvas.delete("arrow")
+        self.help_stop_event.set()  # Встановлюємо стан події для зупинки потоку
+
+    def help_thread_function_1(self, data_queue, app, bot):
+        """Функція, яка виконується у потоці Help."""
+        while not self.help_stop_event.is_set():
+            print("Help працює")
+            # Тут можна додати вашу логіку, наприклад, аналіз або підказки.
+            # time.sleep(1)  # Приклад очікування
+            while True:
+                move = bot.get_best_move(app.events.get_board_state)
+                data_queue.put(move)
+
+    # Друге вікно для вводу ходу
+    def help_thread_function(self, data_queue):
+        while True:
+            move_str = input("Введіть ваш хід (наприклад, e2e4): ").strip()
+            move = chess.Move.from_uci(move_str)
+            data_queue.put(move)
 
     def on_square_click(self, event):
         """Обробка кліку по клітинці на шахівниці."""
