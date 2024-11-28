@@ -2,6 +2,7 @@ import chess
 import promotion
 import queue
 
+from chess_bot_controller import ChessBotController
 from constants import SQUARE_SIZE
 from tkinter import messagebox
 from threading import Thread, Event
@@ -21,7 +22,8 @@ class ChessEvents:
         self.help_thread = None  # Потік для Help / Thread for Help
         self.help_active = False  # Індикатор активності кнопки Help / Indicator of Help button activity
         self.help_stop_event = Event()  # Подія для зупинки потоку Help / Event to stop the Help thread
-        # self.bot_controller = ChessBotController(dfs_depth=4, bfs_depth=3, ucs_depth=3)  # Контролер бота / Bot controller
+        self.bot_controller = ChessBotController(dfs_depth=4, bfs_depth=3,
+                                                 ucs_depth=3)  # Контролер бота / Bot controller
         self.data_queue = queue.Queue()  # Черга для передачі даних / Queue for data transfer
 
     def toggle_help(self):
@@ -43,7 +45,8 @@ class ChessEvents:
         """Запуск потоку Help.
         Starts the Help thread."""
         self.help_stop_event.clear()  # Скидаємо стан події / Clear event state
-        self.help_thread = Thread(target=self.help_thread_function, args=(self.data_queue,), daemon=True)
+        self.help_thread = Thread(target=self.help_thread_function, args=(self.data_queue, self.bot_controller,),
+                                  daemon=True)
         self.help_thread.start()  # Запускаємо допоміжний потік / Start the help thread
 
     def stop_help(self):
@@ -52,7 +55,7 @@ class ChessEvents:
         self.chess_app.canvas.delete("arrow")  # Видаляємо стрілку на шахівниці / Remove the arrow on the chessboard
         self.help_stop_event.set()  # Встановлюємо подію для зупинки потоку / Set event to stop the thread
 
-    def help_thread_function_1(self, data_queue, bot):
+    def help_thread_function(self, data_queue, bot):
         """Функція, яка виконується у потоці Help для отримання кращого ходу від бота.
         Function that runs in the Help thread to get the best move from the bot."""
         while not self.help_stop_event.is_set():  # Перевірка на зупинку потоку / Check if the thread is stopped
@@ -61,12 +64,13 @@ class ChessEvents:
                 move = bot.get_best_move(self.get_board_state)  # Отримуємо кращий хід / Get the best move
                 data_queue.put(move)  # Додаємо хід в чергу / Add move to the queue
 
-    def help_thread_function(self, data_queue):
+    def help_thread_function_1(self, data_queue):
         """Функція для введення ходу користувачем через консоль.
         Function for inputting a move from the user via the console."""
         while True:
             move_str = input("Введіть ваш хід (наприклад, e2e4): ").strip()  # Читання ходу / Reading the move
-            move = chess.Move.from_uci(move_str)  # Перетворення введеного ходу в об'єкт ходу / Convert input move to a move object
+            move = chess.Move.from_uci(
+                move_str)  # Перетворення введеного ходу в об'єкт ходу / Convert input move to a move object
             data_queue.put(move)  # Додаємо хід в чергу / Add move to the queue
 
     def on_square_click(self, event):
@@ -101,7 +105,8 @@ class ChessEvents:
                 self.chess_app.update_board()  # Оновлюємо шахівницю / Update the chessboard
 
                 if self.board.is_game_over():  # Перевірка на закінчення гри / Check if the game is over
-                    messagebox.showinfo("Game Over", "Game Over!")  # Повідомлення про завершення гри / Game over message
+                    messagebox.showinfo("Game Over",
+                                        "Game Over!")  # Повідомлення про завершення гри / Game over message
                     self.board.reset()  # Скидаємо шахівницю / Reset the chessboard
                     self.chess_app.update_board()  # Оновлюємо шахівницю після скидання / Update the board after reset
 
@@ -112,7 +117,8 @@ class ChessEvents:
 
         else:
             print("Просто клітина")  # Debug print / Debug message
-            piece = self.board.get_board().piece_at(square)  # Перевірка, чи є фігура на клітинці / Check if there is a piece on the square
+            piece = self.board.get_board().piece_at(
+                square)  # Перевірка, чи є фігура на клітинці / Check if there is a piece on the square
             if piece:  # Якщо є фігура на клітинці / If there is a piece on the square
                 print("Є фігура")  # Debug print / Debug message
                 self.selected_square = square  # Вибираємо фігуру / Select the piece
