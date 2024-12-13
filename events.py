@@ -27,7 +27,7 @@ class ChessEvents:
         self.help_thread = None  # Потік для Help / Thread for Help
         self.help_active = False  # Індикатор активності кнопки Help / Indicator of Help button activity
         self.help_stop_event = Event()  # Подія для зупинки потоку Help / Event to stop the Help thread
-        self.bot_controller = ChessBotController(dfs_depth=4, bfs_depth=3)  # Контролер бота / Bot controller
+        self.bot_controller = ChessBotController(dfs_depth=4, bfs_depth=3, bds_depth=2)  # Контролер бота / Bot controller
         self.data_queue = queue.Queue()  # Черга для передачі даних / Queue for data transfer
 
         self.event = threading.Event()

@@ -1,16 +1,17 @@
 from chess_bot_dfs import ChessBotDFS
 from chess_bot_bfs import ChessBotBFS
+from chess_bot_ucs import ChessBotBDS
 from position_evaluator import PositionEvaluator
 
 class ChessBotController:
-    def __init__(self, dfs_depth, bfs_depth):
+    def __init__(self, dfs_depth, bfs_depth, bds_depth):
         # Create a single instance of PositionEvaluator
         self.position_evaluator = PositionEvaluator()
         
         # Pass it to each bot
         self.dfs_bot = ChessBotDFS(dfs_depth, self.position_evaluator)
         self.bfs_bot = ChessBotBFS(bfs_depth, self.position_evaluator)
-        # self.ucs_bot = ChessBotUCS(ucs_depth, self.position_evaluator)
+        self.bds_bot = ChessBotBDS(bds_depth, self.position_evaluator)
 
     def choose_bot(self, board):
         """
@@ -28,7 +29,7 @@ class ChessBotController:
         else:
             print("Use BFS for complex situations") # Endgame
             # return self.ucs_bot
-            return self.bfs_bot
+            return self.bds_bot
 
     def get_best_move(self, board):
         """
