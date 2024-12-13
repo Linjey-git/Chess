@@ -41,3 +41,8 @@ class ChessBoard:
     def reset(self):
         """Скидає дошку до початкового стану / Resets the board to the initial state."""
         self.board = chess.Board()
+
+    def is_initial_position(self):
+        """Перевіряє, чи шахівниця перебуває в початковому стані / Checks if the chessboard is in its initial state."""
+        initial_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        return self.board.fen() == initial_fen

@@ -1,7 +1,13 @@
+import threading
+from ctypes import c_ushort
+
 import chess
+from chess.svg import board
+
 import promotion
 import queue
 
+from board import ChessBoard
 from chess_bot_controller import ChessBotController
 from constants import SQUARE_SIZE
 from tkinter import messagebox
@@ -26,6 +32,8 @@ class ChessEvents:
                                                  ucs_depth=3)  # Контролер бота / Bot controller
         self.data_queue = queue.Queue()  # Черга для передачі даних / Queue for data transfer
 
+        self.event = threading.Event()
+
     def toggle_help(self):
         """Обробник натискання кнопки Help.
         Перемикає стан допомоги: включає/вимикає потік допомоги.
@@ -45,7 +53,8 @@ class ChessEvents:
         """Запуск потоку Help.
         Starts the Help thread."""
         self.help_stop_event.clear()  # Скидаємо стан події / Clear event state
-        self.help_thread = Thread(target=self.help_thread_function, args=(self.data_queue, self.bot_controller,),
+        self.help_thread = Thread(target=self.help_thread_function,
+                                  args=(self.data_queue, self.bot_controller, self.event,),
                                   daemon=True)
         self.help_thread.start()  # Запускаємо допоміжний потік / Start the help thread
 
@@ -55,14 +64,39 @@ class ChessEvents:
         self.chess_app.canvas.delete("arrow")  # Видаляємо стрілку на шахівниці / Remove the arrow on the chessboard
         self.help_stop_event.set()  # Встановлюємо подію для зупинки потоку / Set event to stop the thread
 
-    def help_thread_function(self, data_queue, bot):
+    def help_thread_function(self, data_queue, bot, event):
         """Функція, яка виконується у потоці Help для отримання кращого ходу від бота.
         Function that runs in the Help thread to get the best move from the bot."""
-        while not self.help_stop_event.is_set():  # Перевірка на зупинку потоку / Check if the thread is stopped
-            print("Help працює")  # Повідомлення про активність допомоги / Help is working message
-            while True:
-                move = bot.get_best_move(self.get_board_state)  # Отримуємо кращий хід / Get the best move
+        # while not self.help_stop_event.is_set():  # Перевірка на зупинку потоку / Check if the thread is stopped
+        # print("Help працює")  # Повідомлення про активність допомоги / Help is working message
+        while True:
+        #     print("Пошук шукає")
+        #     event.wait()
+        #     print("шахівниця змінилась")
+        #     while event.is_set():
+        #         move = bot.get_best_move(self.board.get_board())  # Отримуємо кращий хід / Get the best move
+        #         data_queue.put(move)  # Додаємо хід в чергу / Add move to the queue
+        #
+        #         if event.is_set():
+        #             break
+        #     event.close()
+
+            print("Пошук шукає")
+            if self.board.is_initial_position():
+                print("шахівниця змінилась")
+                move = bot.get_best_move(self.board.get_board())  # Отримуємо кращий хід / Get the best move
                 data_queue.put(move)  # Додаємо хід в чергу / Add move to the queue
+
+            else:
+
+                print("шахівниця змінилась")
+                move = bot.get_best_move(self.board.get_board())  # Отримуємо кращий хід / Get the best move
+                data_queue.put(move)  # Додаємо хід в чергу / Add move to the queue
+
+            event.wait()
+
+        # event.set()
+        # continue
 
     def help_thread_function_1(self, data_queue):
         """Функція для введення ходу користувачем через консоль.
@@ -103,6 +137,8 @@ class ChessEvents:
 
                 self.board.make_move(move)  # Виконуємо хід / Execute the move
                 self.chess_app.update_board()  # Оновлюємо шахівницю / Update the chessboard
+                self.event.set()
+                self.event.clear()
 
                 if self.board.is_game_over():  # Перевірка на закінчення гри / Check if the game is over
                     messagebox.showinfo("Game Over",
@@ -129,4 +165,5 @@ class ChessEvents:
     def get_board_state(self):
         """Повертає поточний стан шахівниці у вигляді словника, де ключ — клітинка, а значення — фігура.
         Returns the current state of the chessboard as a dictionary where the key is the square and the value is the piece."""
-        return {square: str(piece) for square, piece in self.board.board.piece_map().items()}
+        # return {square: str(piece) for square, piece in self.board.board.piece_map().items()
+        return self.board.get_board

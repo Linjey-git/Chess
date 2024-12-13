@@ -1,4 +1,7 @@
+import time
 import tkinter as tk
+
+from chess.svg import board
 
 from board import ChessBoard
 from resources import Resources
@@ -19,6 +22,8 @@ class ChessApp:
         self.root.resizable(False, False)
 
         self.board = ChessBoard()
+
+        self.a = self.board.get_board().piece_map().values()
 
         # Канвас для шахівниці
         # Canvas for the chessboard
@@ -126,6 +131,8 @@ class ChessApp:
 
         self.highlight_check()  # Виклик нової функції для перевірки шаху / Call the new function to check for check
         self.highlight_legal_moves()  # Підсвічуємо можливі ходи для вибраної фігури / Highlight legal moves for selected piece
+
+
 
     def draw_move_arrow(self, move):
         """Малює червону стрілку, що символізує хід.
