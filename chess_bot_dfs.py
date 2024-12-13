@@ -1,104 +1,104 @@
 class ChessBotDFS:
     def __init__(self, depth, evaluator):
-        self.depth = depth  # Глубина поиска
-        self.evaluator = evaluator  # Функция оценки позиции
-        self.nodes_explored = 0  # Счетчик просмотренных узлов
-        self.transposition_table = {}  # Таблица переходов для запоминания ранее вычисленных позиций
+        self.depth = depth  # Search depth
+        self.evaluator = evaluator  # Position evaluation function
+        self.nodes_explored = 0 # Counter for the number of nodes explored
+        self.transposition_table = {}  # Transposition table for storing previously computed positions
 
     def get_best_move(self, board):
         """
-        Определение лучшего хода для текущей позиции с использованием минимакса
-        
-        :param board: Объект chess.Board, представляющий текущую шахматную позицию
-        :return: Лучший ход для текущей позиции
+        Determining the best move for the current position using minimax
+
+        :param board: chess.Board object representing the current chess position
+        :return: The best move for the current position
         """
-        best_move = None  # Лучший найденный ход
-        best_value = float('-inf')  # Изначально задаем наихудшую оценку
-        alpha, beta = float('-inf'), float('inf')  # Инициализация значений для альфа-бета отсечения
+        best_move = None  # The best move found
+        best_value = float('-inf')  # Initially set the worst evaluation 
+        alpha, beta = float('-inf'), float('inf')  # Initialization of values for alpha-beta pruning
 
-        # Проходим по всем возможным ходам
+        # We go through all possible moves
         for move in self.get_ordered_moves(board):
-            board.push(move)  # Выполняем ход
-            value = self.minimax(board, self.depth - 1, alpha, beta, False)  # Вычисляем оценку с минимаксом
-            board.pop()  # Возвращаем позицию назад
+            board.push(move)  # We make a move
+            value = self.minimax(board, self.depth - 1, alpha, beta, False)  # We calculate the evaluation using minimax
+            board.pop()  # We revert the position
 
-            # Если найденный ход лучше предыдущего, обновляем лучший
+            # If the found move is better than the previous one, we update the best
             if value > best_value:
                 best_value = value
                 best_move = move
 
-            # Обновляем значение альфа для отсечения
+            # We update the alpha value for pruning
             alpha = max(alpha, value)
 
-        print(f"Nodes explored: {self.nodes_explored}")  # Вывод количества просмотренных узлов для отладки
+        print(f"Nodes explored: {self.nodes_explored}")  # Output the number of nodes evaluated for debugging
         return best_move
 
     def minimax(self, board, depth, alpha, beta, maximizing_player):
 
-        # Реализация алгоритма Минимакс с альфа-бета отсечением и хешированием
-        # Генерируем ключ для хэш-таблицы, чтобы учитывать текущую доску, глубину и альфа-бета параметры
+        # Generate a key for the hash table to account for the current board, depth, and alpha-beta parameters
+        # We generate a key for the hash table to account for the current board, depth, and alpha-beta parameters
         board_key = (board.board_fen(), depth, alpha, beta, maximizing_player)
 
-        # Проверяем, если позиция уже вычислена ранее
+        # We check if the position has already been evaluated previously
         if board_key in self.transposition_table:
             return self.transposition_table[board_key]
 
-        self.nodes_explored += 1  # Увеличиваем счетчик просмотренных узлов
+        self.nodes_explored += 1  # We increase the counter of evaluated nodes
 
-        # Если достигли максимальной глубины или игра завершена, оцениваем позицию
+        # If we have reached the maximum depth or the game is over, we evaluate the position
         if depth == 0 or board.is_game_over():
             evaluation = self.evaluator.evaluate(board)
-            self.transposition_table[board_key] = evaluation  # Сохраняем оценку в хэш-таблице
+            self.transposition_table[board_key] = evaluation  # We store the evaluation in the hash table
             return evaluation
 
         if maximizing_player:
-            # Максимизирующий игрок (бот)
+            # Maximizing player (bot)
             max_eval = float('-inf')
             for move in self.get_ordered_moves(board):
                 board.push(move)
                 eval = self.minimax(board, depth - 1, alpha, beta, False)
                 board.pop()
                 max_eval = max(max_eval, eval)
-                alpha = max(alpha, eval)  # Обновляем альфа
-                if beta <= alpha:  # Отсечение
+                alpha = max(alpha, eval)  # We update alpha
+                if beta <= alpha:  # Pruning
                     break
-            self.transposition_table[board_key] = max_eval  # Сохраняем результат в таблице переходов
+            self.transposition_table[board_key] = max_eval  # We store the result in the transposition table
             return max_eval
         else:
-            # Минимизирующий игрок (противник)
+            # Minimizing player (opponent)
             min_eval = float('inf')
             for move in self.get_ordered_moves(board):
                 board.push(move)
                 eval = self.minimax(board, depth - 1, alpha, beta, True)
                 board.pop()
                 min_eval = min(min_eval, eval)
-                beta = min(beta, eval)  # Обновляем бета
-                if beta <= alpha:  # Отсечение
+                beta = min(beta, eval)  # We update beta
+                if beta <= alpha:  # Pruning
                     break
-            self.transposition_table[board_key] = min_eval  # Сохраняем результат в таблице переходов
+            self.transposition_table[board_key] = min_eval  # We store the result in the transposition table
             return min_eval
 
     def get_ordered_moves(self, board):
         """
-        Возвращает список ходов, упорядоченных по приоритету (например, взятия выше обычных ходов).
+        Returns a list of moves ordered by priority (for example, captures above regular moves).
         
-        :param board: Текущая шахматная доска.
-        :return: Список упорядоченных ходов.
+        :param board: Current chessboard.
+        :return: List of ordered moves.
         """
         def move_score(move):
             """
-            Присваивает ходам вес на основе их приоритета.
-            Взятие фигур имеет больший приоритет.
+            Assigns a weight to moves based on their priority.  
+            Capturing pieces has a higher priority.
             
-            :param move: Ход для оценки.
-            :return: Оценка хода.
+            :param move: Move for evaluation.
+            :return: Move evaluation.
             """
-            if board.is_capture(move):  # Если ход - взятие фигуры
+            if board.is_capture(move):  # If the move is a capture
                 return 10
-            if board.gives_check(move):  # Если ход ставит шах
+            if board.gives_check(move):  # If the move puts the king in check
                 return 5
-            return 0  # Остальные ходы имеют минимальный приоритет
+            return 0  # Other moves have the lowest priority
 
-        moves = list(board.legal_moves)  # Получаем все легальные ходы
-        moves.sort(key=move_score, reverse=True)  # Сортируем по оценке (в порядке убывания)
+        moves = list(board.legal_moves)  # Get all legal moves
+        moves.sort(key=move_score, reverse=True)  # Sort by evaluation (in descending order)
         return moves

@@ -14,7 +14,7 @@ def main():
     def check_for_data():
         while not app.events.data_queue.empty():
             move = app.events.data_queue.get()
-            print(f"Отримано хід: {move}")  # Received move
+            print(f"Move obtained: {move}")  # Received move
             app.draw_move_arrow(move)  # Виклик функції для відображення ходу / Calling the function to display the move
         root.after(100, check_for_data)
 

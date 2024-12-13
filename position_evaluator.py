@@ -2,17 +2,17 @@ import chess
 
 class PositionEvaluator:
     def __init__(self):
-        # Стоимость фигур
+        # Piece values
         self.piece_values = {
             chess.PAWN: 1,
             chess.KNIGHT: 3,
             chess.BISHOP: 3.5,
             chess.ROOK: 5,
             chess.QUEEN: 9,
-            chess.KING: 0 #оценка короля не имеет смысла, тут забрать короля нельзя, можно только поставить мат, а этим занимается king_safety
+            chess.KING: 0 #The evaluation of the king is meaningless, as the king cannot be captured; checkmate is the only goal, and this is handled by king_safety.
         }
 
-        # Центральные клетки
+        # Central squares
         self.center_squares = [chess.E4, chess.D4, chess.E5, chess.D5]
         self.wider_center = [
             chess.C3, chess.D3, chess.E3, chess.F3,
@@ -23,12 +23,12 @@ class PositionEvaluator:
 
     def evaluate(self, board):
         """
-        общая оценка позиции
+        Overall position evaluation
         """
         if board.turn == chess.BLACK:
             multiplier = 1
         else: 
-            multiplier = -1  # Меняем знак в зависимости от цвета. Теперь бот не рассист
+            multiplier = -1  # We change the sign depending on the color 
         score = 0
         score += self.material_balance(board) * 4
         score += self.center_control(board) * 3
@@ -40,7 +40,7 @@ class PositionEvaluator:
 
     def material_balance(self, board):
         """
-        Оценка разницы в материале.
+        Evaluation of material difference.
         """
         score = 0
         for square in chess.SQUARES:
@@ -55,7 +55,7 @@ class PositionEvaluator:
 
     def center_control(self, board):
         """
-        Оценка контроля центра
+        Evaluation of central control
         """
         score = 0
         for square in self.center_squares:
@@ -72,7 +72,7 @@ class PositionEvaluator:
 
     def pawn_structure(self, board):
         """
-        Оценка структуры пешек: изолированные, удвоенные
+        Evaluation of pawn structure: isolated, doubled
         """
         score = 0
         pawns = list(board.pieces(chess.PAWN, chess.BLACK)) + list(board.pieces(chess.PAWN, chess.WHITE))
@@ -85,39 +85,39 @@ class PositionEvaluator:
 
         for file, ranks in pawn_files.items():
             if len(ranks) > 1:
-                score -= 0.5  # Удвоенные пешки
+                score -= 0.5  # Doubled pawns
             if len(ranks) == 1:
                 neighbors = [file - 1, file + 1]
                 if not any(neighbor in pawn_files and pawn_files[neighbor] for neighbor in neighbors):
-                    score -= 0.5  # Изолированные пешки
+                    score -= 0.5  # Isolated pawns
 
         return score
 
     def king_safety(self, board):
         score = 0
         """
-        Оценка безопасности короля (МНОГА ОЧКОВ ЗА МАТ)
+        King safety evaluation (LOTS OF POINTS FOR CHECKMATE)
         """
 
         """
-        простая оценка безопасности (устаревшее)
+        Simple king safety evaluation (outdated)
         if black_king_square in [chess.G8, chess.C8]:
             score += 1
         if white_king_square in [chess.G1, chess.C1]:
             score -= 1
         if board.is_checkmate() and board.turn == chess.WHITE:
-            score += 1000  # Черные выигрывают, если белый король в мате
+            score += 1000  # Black wins if the white king is in checkmate
         """
 
         if board.is_checkmate() and board.turn == chess.WHITE:
-            score += 10000  #накидываем боту очки за мат белым, шоб было к чему стремится
+            score += 10000  #We add points to the bot for a white checkmate.
         elif board.is_checkmate() and board.turn == chess.BLACK:
             score -= 10000 
         return score
 
     def piece_activity(self, board):
         """
-        Оценка активности фигур: количество доступных ходов
+        Piece activity evaluation: number of available moves.
         """
         score = 0
         for move in board.legal_moves:
@@ -129,7 +129,7 @@ class PositionEvaluator:
 
     def threats(self, board):
         """
-        Оценка угроз: атакуемые фигуры противника
+        Threat evaluation: attacked opponent pieces.
         """
         score = 0
         for square in chess.SQUARES:
