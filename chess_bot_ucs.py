@@ -23,7 +23,10 @@ class ChessBotUCS:
 
             for move in current_board.legal_moves:
                 current_board.push(move)
+                print(f"Текущая доска после хода: {current_board}")
+
                 move_cost = self.evaluator.evaluate(current_board)
+                # Добавляем новое состояние доски в очередь в виде FEN строки
                 # Преобразуем ход в строку перед добавлением в очередь
                 heapq.heappush(priority_queue, (current_cost + move_cost, current_board.fen(), first_move if depth > 0 else move, depth + 1))
                 current_board.pop()

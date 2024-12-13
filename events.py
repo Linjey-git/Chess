@@ -28,8 +28,7 @@ class ChessEvents:
         self.help_thread = None  # Потік для Help / Thread for Help
         self.help_active = False  # Індикатор активності кнопки Help / Indicator of Help button activity
         self.help_stop_event = Event()  # Подія для зупинки потоку Help / Event to stop the Help thread
-        self.bot_controller = ChessBotController(dfs_depth=4, bfs_depth=3,
-                                                 ucs_depth=3)  # Контролер бота / Bot controller
+        self.bot_controller = ChessBotController(dfs_depth=4, bfs_depth=3)  # Контролер бота / Bot controller
         self.data_queue = queue.Queue()  # Черга для передачі даних / Queue for data transfer
 
         self.event = threading.Event()
@@ -63,23 +62,13 @@ class ChessEvents:
         Stops the Help thread."""
         self.chess_app.canvas.delete("arrow")  # Видаляємо стрілку на шахівниці / Remove the arrow on the chessboard
         self.help_stop_event.set()  # Встановлюємо подію для зупинки потоку / Set event to stop the thread
+        # self.help_thread.join()
 
     def help_thread_function(self, data_queue, bot, event):
         """Функція, яка виконується у потоці Help для отримання кращого ходу від бота.
         Function that runs in the Help thread to get the best move from the bot."""
-        # while not self.help_stop_event.is_set():  # Перевірка на зупинку потоку / Check if the thread is stopped
-        # print("Help працює")  # Повідомлення про активність допомоги / Help is working message
-        while True:
-        #     print("Пошук шукає")
-        #     event.wait()
-        #     print("шахівниця змінилась")
-        #     while event.is_set():
-        #         move = bot.get_best_move(self.board.get_board())  # Отримуємо кращий хід / Get the best move
-        #         data_queue.put(move)  # Додаємо хід в чергу / Add move to the queue
-        #
-        #         if event.is_set():
-        #             break
-        #     event.close()
+        while not self.help_stop_event.is_set():  # Перевірка на зупинку потоку / Check if the thread is stopped
+            # while True:
 
             print("Пошук шукає")
             if self.board.is_initial_position():
@@ -137,6 +126,7 @@ class ChessEvents:
 
                 self.board.make_move(move)  # Виконуємо хід / Execute the move
                 self.chess_app.update_board()  # Оновлюємо шахівницю / Update the chessboard
+                self.chess_app.canvas.delete("arrow")
                 self.event.set()
                 self.event.clear()
 
