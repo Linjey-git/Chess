@@ -1,6 +1,6 @@
 from chess_bot_dfs import ChessBotDFS
 from chess_bot_bfs import ChessBotBFS
-from chess_bot_ucs import ChessBotBDS
+from chess_bot_bds import ChessBotBDS
 from position_evaluator import PositionEvaluator
 
 class ChessBotController:
